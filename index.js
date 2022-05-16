@@ -9,9 +9,9 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
 dotenv.config();
-express.json();
+app.use(cors());
+app.use(express.json());
 
 // database connection
 const uri = `mongodb+srv://${process.env.user}:${process.env.password}@cluster0.rwgtj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -50,10 +50,26 @@ async function run() {
      * Create booking
      * */
     app.post("/booking", async (req, res) => {
-      console.log(req.body);
       const result = await bookingCollection.insertOne(req.body);
 
       res.send(result);
+    });
+
+    /**
+     * Treatment Route
+     * Get all my services
+     *  */
+    app.get("/myServices", async (req, res) => {
+      const { user } = req.query;
+      let bookings = [];
+
+      if (user) {
+        const query = { email: user };
+
+        const cursor = bookingCollection.find(query);
+        bookings = await cursor.toArray();
+      }
+      res.send(bookings);
     });
   } finally {
     // await client.close();
